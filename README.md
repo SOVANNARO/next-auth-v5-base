@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Config Base Next Auth V5
 
-## Getting Started
+### Install Next JS 15
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+npx create-next-app@15.1.5
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Install shadcn
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+pnpm dlx shadcn@latest init
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Install Zod
 
-## Learn More
+```
+pnpm add zod
+```
 
-To learn more about Next.js, take a look at the following resources:
+### Install React Hook Form
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+pnpm install react-hook-form
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Install @hookform/resolvers (zodResolvers)
 
-## Deploy on Vercel
+```
+pnpm i @hookform/resolvers
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Install Tanstack Query
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+pnpm add @tanstack/react-query
+```
+
+### Install Next Auth V5
+
+```
+pnpm add next-auth@4.24.11
+```
+
+### Install axios
+```
+pnpm install axios
+```
+
+### Install zustand
+```
+pnpm install zustand
+```
