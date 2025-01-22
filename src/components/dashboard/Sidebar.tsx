@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Users,
-  Settings,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -16,7 +15,6 @@ import { Button } from "@/components/ui/button";
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
   { icon: Users, label: "Users", href: "/users" },
-  { icon: Settings, label: "Settings", href: "/settings" },
 ];
 
 const Sidebar = () => {

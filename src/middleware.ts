@@ -6,11 +6,13 @@ export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request });
   const { pathname } = request.nextUrl;
 
+  // Redirect to dashboard if token is present and pathname is root or login
+  if (token && (pathname === '/' || pathname === ROUTES.LOGIN)) {
+    return NextResponse.redirect(new URL(ROUTES.DASHBOARD, request.url));
+  }
+
   // Allow public paths
   if (pathname === ROUTES.LOGIN) {
-    if (token) {
-      return NextResponse.redirect(new URL(ROUTES.DASHBOARD, request.url));
-    }
     return NextResponse.next();
   }
 

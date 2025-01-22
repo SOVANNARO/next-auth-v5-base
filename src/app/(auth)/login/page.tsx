@@ -7,6 +7,8 @@ import useLoginMutation from "@/hooks/useLoginMutation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react"; // Import the icons
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -18,10 +20,17 @@ const Login = () => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(loginSchema),
   });
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prevShowPassword) => !prevShowPassword);
+  };
 
   const onSubmit = async (data: any) => {
     try {
@@ -29,6 +38,12 @@ const Login = () => {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  // Function to autofill demo credentials
+  const useDemoCredentials = () => {
+    setValue("email", "john@mail.com");
+    setValue("password", "changeme");
   };
 
   return (
@@ -52,13 +67,20 @@ const Login = () => {
                 </p>
               )}
             </div>
-            <div>
+            <div className="relative">
               <Input
                 {...register("password")}
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Password"
-                className="w-full"
+                className="w-full pr-10"
               />
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2"
+                onClick={togglePasswordVisibility}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
               {errors.password && (
                 <p className="text-sm text-red-500 mt-1">
                   {errors.password.message as string}
@@ -67,6 +89,15 @@ const Login = () => {
             </div>
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? "Loading..." : "Sign In"}
+            </Button>
+            {/* Demo Credentials Button */}
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={useDemoCredentials}
+            >
+              Use Demo Credentials
             </Button>
           </form>
         </CardContent>
