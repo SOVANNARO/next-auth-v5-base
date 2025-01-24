@@ -16,10 +16,13 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         try {
           // Authenticate the user and get tokens
-          const { access_token, refresh_token } = await post<auth>("/auth/login", {
-            email: credentials?.email,
-            password: credentials?.password,
-          });
+          const { access_token, refresh_token } = await post<auth>(
+            "/auth/login",
+            {
+              email: credentials?.email,
+              password: credentials?.password,
+            },
+          );
 
           // Store tokens in the auth store
           useAuthStore.getState().setTokens(access_token, refresh_token);

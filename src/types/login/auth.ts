@@ -33,3 +33,10 @@ export interface Session {
   user: User;
   expires: string;
 }
+
+export interface ICreateUser {
+  name: string;
+  email: string;
+  password: string;
+  avatar: string;
+}

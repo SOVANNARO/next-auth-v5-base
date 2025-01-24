@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Redirect to dashboard if token is present and pathname is root or login
-  if (token && (pathname === '/' || pathname === ROUTES.LOGIN)) {
+  if (token && (pathname === "/" || pathname === ROUTES.LOGIN)) {
     return NextResponse.redirect(new URL(ROUTES.DASHBOARD, request.url));
   }
 

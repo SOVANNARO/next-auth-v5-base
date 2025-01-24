@@ -7,7 +7,10 @@ import { AxiosRequestConfig } from "axios"; // Import your configured axios inst
  * @param config
  * @returns The response data
  */
-export const get = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => {
+export const get = async <T>(
+  url: string,
+  config?: AxiosRequestConfig,
+): Promise<T> => {
   try {
     const response = await api.get<T>(url, config); // Pass the config to axios
     return response.data;
@@ -21,11 +24,16 @@ export const get = async <T>(url: string, config?: AxiosRequestConfig): Promise<
  * Reusable POST request function
  * @param url - The endpoint to make the POST request to
  * @param data - The data to send in the request body
+ * @param config - Optional configuration object for the request
  * @returns The response data
  */
-export const post = async <T>(url: string, data: any): Promise<T> => {
+export const post = async <T>(
+  url: string,
+  data: any,
+  config?: AxiosRequestConfig,
+): Promise<T> => {
   try {
-    const response = await api.post<T>(url, data);
+    const response = await api.post<T>(url, data, config);
     return response.data;
   } catch (error) {
     console.error("Error making POST request:", error);

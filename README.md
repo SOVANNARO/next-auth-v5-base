@@ -57,3 +57,8 @@ pnpm install axios
 ```
 pnpm install zustand
 ```
+
+### ✅ Install Dark Mode
+```
+pnpm add next-themes
+```

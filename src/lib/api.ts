@@ -25,7 +25,7 @@ api.interceptors.response.use(
       try {
         const { access_token, refresh_token } = await post<{
           access_token: string;
-          refresh_token: string
+          refresh_token: string;
         }>("/auth/refresh-token", {
           refreshToken,
         });
