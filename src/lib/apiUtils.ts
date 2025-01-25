@@ -1,5 +1,5 @@
 import api from "@/lib/api";
-import { AxiosRequestConfig } from "axios"; // Import your configured axios instance
+import { AxiosRequestConfig } from "axios";
 
 /**
  * Reusable GET request function
@@ -45,11 +45,16 @@ export const post = async <T>(
  * Reusable PUT request function
  * @param url - The endpoint to make the PUT request to
  * @param data - The data to send in the request body
+ * @param config - Optional configuration object for the request
  * @returns The response data
  */
-export const put = async <T>(url: string, data: any): Promise<T> => {
+export const put = async <T>(
+  url: string,
+  data: any,
+  config?: AxiosRequestConfig,
+): Promise<T> => {
   try {
-    const response = await api.put<T>(url, data);
+    const response = await api.put<T>(url, data, config);
     return response.data;
   } catch (error) {
     console.error("Error making PUT request:", error);
@@ -60,11 +65,15 @@ export const put = async <T>(url: string, data: any): Promise<T> => {
 /**
  * Reusable DELETE request function
  * @param url - The endpoint to make the DELETE request to
+ * @param config - Optional configuration object for the request
  * @returns The response data
  */
-export const del = async <T>(url: string): Promise<T> => {
+export const del = async <T>(
+  url: string,
+  config?: AxiosRequestConfig,
+): Promise<T> => {
   try {
-    const response = await api.delete<T>(url);
+    const response = await api.delete<T>(url, config);
     return response.data;
   } catch (error) {
     console.error("Error making DELETE request:", error);

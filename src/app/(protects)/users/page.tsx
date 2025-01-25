@@ -31,6 +31,17 @@ import {
 import { Input } from "@/components/ui/input";
 import useMutateUser from "@/stores/users/useMutateUser";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const userSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -49,7 +60,19 @@ const UsersPage = () => {
   const { data, error, isLoading } = useQueryUser();
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 10;
-  const { createUser } = useMutateUser();
+  const {
+    createUser,
+    updateUser,
+    deleteUser,
+    isPendingCreateUser,
+    isPendingUpdateUser,
+  } = useMutateUser();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<number | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [isDetailDrawerOpen, setIsDetailDrawerOpen] = useState(false);
+  const [userDetail, setUserDetail] = useState<User | null>(null);
 
   const totalPages = data ? Math.ceil(data.length / usersPerPage) : 0;
   const currentUsers = data?.slice(
@@ -85,41 +108,82 @@ const UsersPage = () => {
         avatar: data.avatar || "",
       };
       await createUser(userData);
-      reset();
       toast({
-        title: "Scheduled: Catch up",
-        description: "Friday, February 10, 2023 at 5:57 PM",
+        description: "User Created",
       });
     } catch (error) {
       toast({
-        title: "Scheduled: Catch up",
-        description: "Friday, February 10, 2023 at 5:57 PM",
+        description: "Error Creating User",
       });
     }
   };
 
-  const handleEditUser = (data: UserFormData) => {
-    console.log("Edited User:", data);
-    reset();
-    setIsEditMode(false);
+  const handleEditUser = async (data: UserFormData & { id: number }) => {
+    try {
+      const userData: ICreateUser & { id: number } = {
+        ...data,
+        id: data.id,
+        password: data.password || "",
+        avatar: data.avatar || "",
+      };
+      await updateUser(userData);
+      setIsEditMode(false);
+      setIsDrawerOpen(false);
+      toast({
+        description: "User Updated",
+      });
+    } catch (error) {
+      toast({
+        description: "Error Updating User",
+      });
+    }
   };
 
   const handleEdit = (user: User) => {
     reset({
       name: user.name,
       email: user.email,
-      password: "",
+      password: user.password,
       avatar: user.avatar,
     });
+    setEditingUserId(Number(user.id));
+    setIsDrawerOpen(true);
     setIsEditMode(true);
   };
 
-  const handleViewDetail = (user: User) => {
-    console.log("View detail for user:", user);
+  const handleSubmitForm = async (data: UserFormData) => {
+    if (isEditMode && editingUserId !== null) {
+      await handleEditUser({ ...data, id: editingUserId });
+    } else {
+      await handleCreateUser(data);
+    }
   };
 
-  const handleDelete = (user: User) => {
-    console.log("Delete user:", user);
+  const handleViewDetail = (user: User) => {
+    setUserDetail(user);
+    setIsDetailDrawerOpen(true);
+  };
+
+  const handleDelete = async (user: User) => {
+    setUserToDelete(user);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (userToDelete) {
+      try {
+        await deleteUser(Number(userToDelete.id));
+        toast({
+          description: "User Deleted",
+        });
+        setIsDeleteDialogOpen(false);
+        setUserToDelete(null);
+      } catch (error) {
+        toast({
+          description: "Error Deleting User",
+        });
+      }
+    }
   };
 
   const headers = ["ID", "Name", "Email", "Role", "Creation Date", "Actions"];
@@ -195,14 +259,34 @@ const UsersPage = () => {
 
   if (error) return <div>Error loading users</div>;
 
+  const handleOpenDrawer = () => {
+    reset({
+      name: "",
+      email: "",
+      password: "",
+      avatar: "",
+    });
+    setIsDrawerOpen(true);
+  };
+
+  const handleCloseDrawer = () => {
+    setIsDrawerOpen(false);
+    reset();
+  };
+
+  const handleCloseDetailDrawer = () => {
+    setIsDetailDrawerOpen(false);
+    setUserDetail(null);
+  };
+
   return (
     <>
       <div className="mb-4 flex justify-end">
-        <Drawer>
+        <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
           <DrawerTrigger asChild>
             <div>
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" />
+              <Button size="sm" onClick={handleOpenDrawer}>
+                <Plus className="h-4 w-4" />
                 Add User
               </Button>
             </div>
@@ -217,11 +301,7 @@ const UsersPage = () => {
               </DrawerDescription>
             </DrawerHeader>
             <div className="p-4 space-y-4 flex-grow overflow-y-auto">
-              <form
-                onSubmit={handleSubmit(
-                  isEditMode ? handleEditUser : handleCreateUser,
-                )}
-              >
+              <form onSubmit={handleSubmit(handleSubmitForm)}>
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <label htmlFor="name" className="block text-sm font-medium">
@@ -339,15 +419,24 @@ const UsersPage = () => {
               <Button
                 type="submit"
                 className="w-full"
-                onClick={handleSubmit(
-                  isEditMode ? handleEditUser : handleCreateUser,
-                )}
-                disabled={!isValid}
+                onClick={handleSubmit(handleSubmitForm)}
+                disabled={
+                  !isValid || isPendingCreateUser || isPendingUpdateUser
+                }
               >
-                {isEditMode ? "Update User" : "Create User"}
+                {isPendingCreateUser || isPendingUpdateUser
+                  ? "Processing..."
+                  : isEditMode
+                    ? "Update User"
+                    : "Create User"}
               </Button>
+
               <DrawerClose asChild>
-                <Button variant="outline" className="w-full">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleCloseDrawer}
+                >
                   Cancel
                 </Button>
               </DrawerClose>
@@ -384,6 +473,117 @@ const UsersPage = () => {
           onPageChange={handlePageChange}
         />
       )}
+
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your
+              account and remove your data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-500 text-white hover:bg-red-600 focus-visible:ring-red-500"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Drawer open={isDetailDrawerOpen} onOpenChange={setIsDetailDrawerOpen}>
+        <DrawerContent className="w-[400px] ml-auto h-full flex flex-col bg-background">
+          <DrawerHeader className="border-b">
+            <DrawerTitle className="text-xl font-semibold text-foreground">
+              User Details
+            </DrawerTitle>
+          </DrawerHeader>
+          <div className="p-6 flex-grow overflow-y-auto">
+            {userDetail && (
+              <div className="space-y-6">
+                {/* Avatar */}
+                <div className="space-y-1 flex flex-col items-center">
+                  <div className="flex justify-center">
+                    <Avatar className="h-24 w-24">
+                      <AvatarImage src={userDetail.avatar} alt="User Avatar" />
+                      <AvatarFallback className="text-3xl bg-muted text-foreground">
+                        {userDetail.name
+                          ? userDetail.name
+                              .split(" ")
+                              .map((word) => word[0])
+                              .join("")
+                          : "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                </div>
+
+                {/* ID */}
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-muted-foreground">
+                    ID
+                  </label>
+                  <p className="text-sm text-foreground">{userDetail.id}</p>
+                </div>
+
+                {/* Name */}
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-muted-foreground">
+                    Name
+                  </label>
+                  <p className="text-sm text-foreground">{userDetail.name}</p>
+                </div>
+
+                {/* Email */}
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-muted-foreground">
+                    Email
+                  </label>
+                  <p className="text-sm text-foreground break-all">
+                    {userDetail.email}
+                  </p>
+                </div>
+
+                {/* Role */}
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-muted-foreground">
+                    Role
+                  </label>
+                  <p className="text-sm text-foreground">{userDetail.role}</p>
+                </div>
+
+                {/* Creation Date */}
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-muted-foreground">
+                    Creation Date
+                  </label>
+                  <p className="text-sm text-foreground">
+                    {new Date(userDetail.creationAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+          <DrawerFooter className="border-t p-4">
+            <DrawerClose asChild>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleCloseDetailDrawer}
+              >
+                Close
+              </Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </>
   );
 };
